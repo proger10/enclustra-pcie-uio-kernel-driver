@@ -66,6 +66,7 @@ static int enclustra_pci_probe(struct pci_dev *dev, const struct pci_device_id *
     if (!info->mem[0].internal_addr)
         goto out_release;
     info->mem[0].memtype = UIO_MEM_PHYS;
+    printk(KERN_DEBUG "BAR0 done!\n");
 
 
     // BAR2 access to control registers: DMA and PCI-E
@@ -78,6 +79,7 @@ static int enclustra_pci_probe(struct pci_dev *dev, const struct pci_device_id *
     if (!info->mem[1].internal_addr)
         goto out_release;
     info->mem[1].memtype = UIO_MEM_PHYS;
+    printk(KERN_DEBUG "BAR2 done!\n");
 
     // Some driver information
     info->name = "enclustra_pci_test";
@@ -87,9 +89,11 @@ static int enclustra_pci_probe(struct pci_dev *dev, const struct pci_device_id *
     // info->irq_flags = 0;
     info->handler = irq_handler;
 
+    printk(KERN_DEBUG "Going to register UIO device!\n");
     if (uio_register_device(&dev->dev, info))
         goto out_unmap;
 
+    printk(KERN_DEBUG "Going to pci_set_drvdata()!\n");
     pci_set_drvdata(dev, info);
 
     // Allow PCI-E interrupts
@@ -97,13 +101,17 @@ static int enclustra_pci_probe(struct pci_dev *dev, const struct pci_device_id *
     __asm volatile("sfence" ::: "memory"); // Not sure it is neccessary. Synchronize buffer and physical memory
     return 0;
 out_unmap:
+    printk(KERN_DEBUG "out_unmap() error!\n");
     iounmap(info->mem[0].internal_addr);
     iounmap(info->mem[1].internal_addr);
 out_release:
+    printk(KERN_DEBUG "out_release() error!\n");
     pci_release_regions(dev);
 out_disable:
+    printk(KERN_DEBUG "out_disable() error!\n");
     pci_disable_device(dev);
 out_free:
+    printk(KERN_DEBUG "out_free() error!\n");
     kfree (info);
     return -ENODEV;
 }
