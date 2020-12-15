@@ -27,6 +27,7 @@ static irqreturn_t irq_handler(int irq, struct uio_info *dev_info) {
 static int enclustra_pci_probe(struct pci_dev *dev, const struct pci_device_id *id) {
     // info-structure for Userspace I/O
     struct uio_info *info;
+    int r = 0;
     info = kzalloc(sizeof(struct uio_info), GFP_KERNEL);
     if (!info)
         return -ENOMEM;
@@ -90,8 +91,10 @@ static int enclustra_pci_probe(struct pci_dev *dev, const struct pci_device_id *
     info->handler = irq_handler;
 
     printk(KERN_DEBUG "Going to register UIO device!\n");
-    if (uio_register_device(&dev->dev, info))
+    if (r = uio_register_device(&dev->dev, info)){
+        printk(KERN_DEBUG "uio_register_device() returned %d!\n", r);
         goto out_unmap;
+    }
 
     printk(KERN_DEBUG "Going to pci_set_drvdata()!\n");
     pci_set_drvdata(dev, info);
